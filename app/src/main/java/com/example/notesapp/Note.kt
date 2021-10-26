@@ -1,3 +1,3 @@
 package com.example.notesapp
 
-data class Note (val id: Long, val title: String, val note: String)
+data class Note (val id: Long, var title: String, var note: String)

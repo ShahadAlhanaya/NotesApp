@@ -22,6 +22,12 @@ class DBHelper (context: Context): SQLiteOpenHelper(context, DATABASE_NAME, null
         db?.execSQL("CREATE TABLE $TABLE_NOTES ($KEY_ID INTEGER PRIMARY KEY ,$KEY_TITLE TEXT, $KEY_NOTE TEXT)")
     }
 
+    override fun onUpgrade(db: SQLiteDatabase?, p1: Int, p2: Int) {
+        db!!.execSQL("DROP TABLE IF EXISTS $TABLE_NOTES")
+        onCreate(db)
+    }
+
+
     fun addNote(title: String, note: String): Long{
         val sqLiteDatabase = writableDatabase
         val contentValues = ContentValues()
@@ -50,7 +56,6 @@ class DBHelper (context: Context): SQLiteOpenHelper(context, DATABASE_NAME, null
 
     fun retrieveNote(title: String): ArrayList<Note>{
         val sqLiteDatabase = writableDatabase
-//        val query = "SELECT * FROM $TABLE_NOTES WHERE $KEY_TITLE=\"title\""
         var list = arrayListOf<Note>()
         val cursor : Cursor = sqLiteDatabase.query(TABLE_NOTES, null,"LOWER($KEY_TITLE)=?",
             arrayOf(title),null,null,null)
@@ -66,10 +71,23 @@ class DBHelper (context: Context): SQLiteOpenHelper(context, DATABASE_NAME, null
         return list
     }
 
-    override fun onUpgrade(db: SQLiteDatabase?, p1: Int, p2: Int) {
-        db!!.execSQL("DROP TABLE IF EXISTS $TABLE_NOTES")
-        onCreate(db)
+    fun updateNote(id :Long ,title: String, note: String): Int{
+        val sqLiteDatabase = writableDatabase
+        val contentValues = ContentValues()
+        contentValues.put(KEY_TITLE, title)
+        contentValues.put(KEY_NOTE, note)
+        val success = sqLiteDatabase.update(TABLE_NOTES,contentValues, "$KEY_ID =?", arrayOf(id.toString()))
+        sqLiteDatabase.close()
+        return success
     }
+
+    fun deleteNote(id: Long): Int{
+        val sqLiteDatabase = writableDatabase
+        val success = sqLiteDatabase.delete(TABLE_NOTES,"$KEY_ID =?", arrayOf(id.toString()))
+        sqLiteDatabase.close()
+        return success
+    }
+
 
      fun reset() {
         writableDatabase!!.execSQL("DROP TABLE IF EXISTS $TABLE_NOTES")
